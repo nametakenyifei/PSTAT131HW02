@@ -47,7 +47,7 @@ Split the abalone data into a training set and a testing set. Use stratified sam
 *Remember that you'll need to set a seed at the beginning of the document to reproduce your results.*
 
 ```{r echo=TRUE}
-set.seed(2728)
+set.seed(710)
 new_abalone <- new_abalone %>% 
   mutate(num_type = case_when(type == "M" ~ 0,
                               type == "F" ~ 1,
@@ -180,7 +180,13 @@ Creating recipe
 abalone_recipe <- recipe(age ~ longest_shell + diameter + height +
                            whole_weight + shucked_weight +
                            viscera_weight + shell_weight + num_type,
-                         data = new_abalone)
+                         data = new_abalone) %>%
+  step_center(longest_shell, diameter, height, whole_weight,
+              shucked_weight, viscera_weight, shell_weight, num_type
+              ) %>%
+  step_scale(longest_shell, diameter, height, whole_weight,
+              shucked_weight, viscera_weight, shell_weight, num_type
+              )
 abalone_recipe
 ```
 
@@ -250,9 +256,11 @@ Now you want to assess your model's performance. To do this, use the `yardstick`
 2.  Use `predict()` and `bind_cols()` to create a tibble of your model's predicted values from the **training data** along with the actual observed ages (these are needed to assess your model's performance).
 3.  Finally, apply your metric set to the tibble, report the results, and interpret the *R^2^* value.
 
-From what we got for *R^2^*, it is not significant enough to show a strong correlation, it can only be considered relatively strong, but it is not significant enough to compare with our initial function which is age = rings + 1.5. Though the question dint require us to plot a graph, but the scatter plot should be a clear visual representation that our model didn't do well. 
+From what we got for *R^2^*, it is not significant enough to show a strong correlation, it can only be considered relatively strong, but it is not significant enough to compare with our initial function which is age = rings + 1.5. Though the question didn't require us to plot a graph, but the scatter plot should be a clear visual representation that our model didn't do well. 
 
 ```{r }
+abalone_train %>% 
+  head()
 abalone_train_res <- predict(lm_fit, new_data = abalone_train %>%
                                select(-age, -rings, -type))
 
