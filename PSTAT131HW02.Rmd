@@ -267,7 +267,7 @@ Now you want to assess your model's performance. To do this, use the `yardstick`
 2.  Use `predict()` and `bind_cols()` to create a tibble of your model's predicted values from the **training data** along with the actual observed ages (these are needed to assess your model's performance).
 3.  Finally, apply your metric set to the tibble, report the results, and interpret the *R^2^* value.
 
-From what we got for *R^2^*, it is not significant enough to show a strong correlation, it can only be considered relatively strong, but it is not significant enough to compare with our initial function which is age = rings + 1.5. Though the question didn't require us to plot a graph, but the scatter plot should be a clear visual representation that our model didn't do well. 
+From what we got for *R^2^* which is 0.5418369, and somehow when I knit it to pdf it looks different, it is not significant enough to show a strong correlation, it can only be considered relatively strong, but it is not significant enough to compare with our initial function which is age = rings + 1.5. Though the question didn't require us to plot a graph, but the scatter plot should be a clear visual representation that our model didn't do well. 
 
 ```{r }
 abalone_train %>% 
