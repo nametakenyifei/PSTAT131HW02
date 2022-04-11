@@ -60,7 +60,9 @@ new_abalone <- new_abalone %>%
 
 abalone_split <- initial_split(new_abalone, prop = 0.80,
                                 strata = age)
+
 abalone_train <- training(abalone_split)
+
 abalone_test <- testing(abalone_split)
 ```
 
@@ -74,9 +76,12 @@ Steps for your recipe:
 
 1.  dummy code any categorical predictors
 
-new_abalone$gender_m <- ifelse(new_abalone$type == "M", 1, 0)
-new_abalone$gender_f <- ifelse(new_abalone$type == "F", 1, 0)
-new_abalone$gender_i <- ifelse(new_abalone$type == "I", 1, 0)
+new_abalone$gender_m <- ifelse(new_abalone$type == "M", 1, 0)  
+
+new_abalone$gender_f <- ifelse(new_abalone$type == "F", 1, 0) 
+
+new_abalone$gender_i <- ifelse(new_abalone$type == "I", 1, 0)  
+
 this don't seem to work with the latter steps
 ```{r }
 new_abalone <- new_abalone %>% 
@@ -99,6 +104,7 @@ abalone_recipe <- recipe(age ~ longest_shell + diameter + height +
                            whole_weight + shucked_weight +
                            viscera_weight + shell_weight + num_type,
                          data = new_abalone)
+
 interact1 <- abalone_recipe %>% 
   step_interact(terms = ~ num_type : shucked_weight)
 
@@ -114,7 +120,9 @@ interact3 <- abalone_recipe %>%
 I think my seed number is too large, so in order to keep the pdf short I am not going to show the result for the next two parts. I tried to show the result output, but that made my knitted pdf more than a thousand pages long!!! Way to scary. If you want to check out the result you should still be able to see it when you run my rmarkdown file, the results are just not knitted into the pdf file.   
 
 3.  center all predictors, and
-```{r echo = T, results = 'hide'}
+
+
+```{r echo=TRUE}
 
 
 # or 
@@ -126,6 +134,7 @@ center_aba
 ```
 or we can use  
 
+```{r echo = T, results = 'hide'}
 scale(new_abalone$longest_shell, center = TRUE, scale = FALSE)  
 
 scale(new_abalone$diameter, center = TRUE, scale = FALSE)  
@@ -142,13 +151,15 @@ scale(new_abalone$shell_weight, center = TRUE, scale = FALSE)
 
 scale(new_abalone$num_type, center = TRUE, scale = FALSE)  
 
+```
+
 
 4.  scale all predictors.
 
 You'll need to investigate the `tidymodels` documentation to find the appropriate step functions to use.
 
  
-```{r echo = T, results = 'hide'}
+```{r echo = T}
 scale_aba <- abalone_recipe %>% 
   step_scale(longest_shell, diameter, height, whole_weight,
               shucked_weight, viscera_weight, shell_weight, num_type
@@ -156,7 +167,7 @@ scale_aba <- abalone_recipe %>%
 scale_aba
 ```
 or we can use  
-
+```{r echo = T, results = 'hide'}
 scale(new_abalone$longest_shell)  
 
 scale(new_abalone$diameter)  
@@ -172,7 +183,7 @@ scale(new_abalone$viscera_weight)
 scale(new_abalone$shell_weight)  
 
 scale(new_abalone$num_type)  
-
+```
 
 Creating recipe
 
