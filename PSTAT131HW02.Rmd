@@ -49,12 +49,6 @@ Split the abalone data into a training set and a testing set. Use stratified sam
 ```{r echo=TRUE}
 set.seed(710)
 
-#I need to put the above lines of code there so I dont run 
-#into problems later when knitting, its a logical error if 
-#I dont put them there. Because splitting the training and 
-#test data before dummy coding type will result in them not 
-#having the new variable.
-
 abalone_split <- initial_split(new_abalone, prop = 0.80,
                                 strata = age)
 
