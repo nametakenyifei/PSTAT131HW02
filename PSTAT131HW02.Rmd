@@ -297,5 +297,5 @@ abalone_train_res %>%
   theme_bw() +
   coord_obs_pred()
 ```
-
+![the actual metric table](/Users/codenametaken/Downloads/rmsersqmae.jpg)
 
