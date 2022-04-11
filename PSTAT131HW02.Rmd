@@ -48,10 +48,7 @@ Split the abalone data into a training set and a testing set. Use stratified sam
 
 ```{r echo=TRUE}
 set.seed(710)
-new_abalone <- new_abalone %>% 
-  mutate(num_type = case_when(type == "M" ~ 0,
-                              type == "F" ~ 1,
-                              type == "I" ~ 2))
+
 #I need to put the above lines of code there so I dont run 
 #into problems later when knitting, its a logical error if 
 #I dont put them there. Because splitting the training and 
@@ -64,8 +61,11 @@ abalone_split <- initial_split(new_abalone, prop = 0.80,
 abalone_train <- training(abalone_split)
 
 abalone_test <- testing(abalone_split)
+abalone_train %>% 
+  head()
 ```
 
+                              
 ### Question 3
 
 Using the **training** data, create a recipe predicting the outcome variable, `age`, with all other predictor variables. Note that you should not include `rings` to predict `age`. Explain why you shouldn't use `rings` to predict `age`.
@@ -82,12 +82,11 @@ new_abalone$gender_f <- ifelse(new_abalone$type == "F", 1, 0)
 
 new_abalone$gender_i <- ifelse(new_abalone$type == "I", 1, 0)  
 
+
 this don't seem to work with the latter steps
-```{r }
-new_abalone <- new_abalone %>% 
-  mutate(num_type = case_when(type == "M" ~ 0,
-                              type == "F" ~ 1,
-                              type == "I" ~ 2))
+
+```{r echo=FALSE}
+
 # or use step_dummy()
 
 sapply(new_abalone, class)
@@ -99,107 +98,40 @@ sapply(new_abalone, class)
     -   `longest_shell` and `diameter`,
     -   `shucked_weight` and `shell_weight`
 
-```{r }
-abalone_recipe <- recipe(age ~ longest_shell + diameter + height +
-                           whole_weight + shucked_weight +
-                           viscera_weight + shell_weight + num_type,
-                         data = new_abalone)
-
-interact1 <- abalone_recipe %>% 
-  step_interact(terms = ~ num_type : shucked_weight)
-
-interact2 <- abalone_recipe %>% 
-  step_interact(terms = ~ longest_shell : diameter, data)
-
-interact3 <- abalone_recipe %>% 
-  step_interact(terms = ~ shell_weight : shucked_weight)
-
-
-```
-
-I think my seed number is too large, so in order to keep the pdf short I am not going to show the result for the next two parts. I tried to show the result output, but that made my knitted pdf more than a thousand pages long!!! Way to scary. If you want to check out the result you should still be able to see it when you run my rmarkdown file, the results are just not knitted into the pdf file.   
 
 3.  center all predictors, and
-
-
-```{r echo=TRUE}
-
-
-# or 
-center_aba <- abalone_recipe %>% 
-  step_center(longest_shell, diameter, height, whole_weight,
-              shucked_weight, viscera_weight, shell_weight, num_type
-              )
-center_aba
-```
-or we can use  
-
-```{r echo = T, results = 'hide'}
-scale(new_abalone$longest_shell, center = TRUE, scale = FALSE)  
-
-scale(new_abalone$diameter, center = TRUE, scale = FALSE)  
-
-scale(new_abalone$height, center = TRUE, scale = FALSE)  
-
-scale(new_abalone$whole_weight, center = TRUE, scale = FALSE)  
-
-scale(new_abalone$shucked_weight, center = TRUE, scale = FALSE)  
-
-scale(new_abalone$viscera_weight, center = TRUE, scale = FALSE)  
-
-scale(new_abalone$shell_weight, center = TRUE, scale = FALSE)  
-
-scale(new_abalone$num_type, center = TRUE, scale = FALSE)  
-
-```
 
 
 4.  scale all predictors.
 
 You'll need to investigate the `tidymodels` documentation to find the appropriate step functions to use.
 
- 
-```{r echo = T}
-scale_aba <- abalone_recipe %>% 
-  step_scale(longest_shell, diameter, height, whole_weight,
-              shucked_weight, viscera_weight, shell_weight, num_type
-              )
-scale_aba
-```
-or we can use  
-```{r echo = T, results = 'hide'}
-scale(new_abalone$longest_shell)  
 
-scale(new_abalone$diameter)  
-
-scale(new_abalone$height)  
-
-scale(new_abalone$whole_weight)  
-
-scale(new_abalone$shucked_weight)  
-
-scale(new_abalone$viscera_weight)  
- 
-scale(new_abalone$shell_weight)  
-
-scale(new_abalone$num_type)  
-```
 
 Creating recipe
 
 ```{r }
+new_abalone %>%
+  head()
 abalone_recipe <- recipe(age ~ longest_shell + diameter + height +
                            whole_weight + shucked_weight +
-                           viscera_weight + shell_weight + num_type,
+                           viscera_weight + shell_weight + type,
                          data = new_abalone) %>%
+  step_dummy(all_nominal_predictors()) %>% 
   step_center(longest_shell, diameter, height, whole_weight,
-              shucked_weight, viscera_weight, shell_weight, num_type
+              shucked_weight, viscera_weight, shell_weight
               ) %>%
   step_scale(longest_shell, diameter, height, whole_weight,
-              shucked_weight, viscera_weight, shell_weight, num_type
-              )
+              shucked_weight, viscera_weight, shell_weight
+              ) %>%
+  step_interact(terms = ~ type : shucked_weight) %>% 
+  step_interact(terms = ~ longest_shell : diameter) %>% 
+  step_interact(terms = ~ shell_weight : shucked_weight) 
+
 abalone_recipe
 ```
+%>%  
+  prep(abalone_train)
 
 ### Question 4
 
@@ -213,7 +145,7 @@ lm_model <- linear_reg() %>%
 
 fit <- lm(age ~ longest_shell + diameter + height +
                            whole_weight + shucked_weight +
-                           viscera_weight + shell_weight + num_type,
+                           viscera_weight + shell_weight + type,
                          data = new_abalone)
 summary(fit)
 summary(lm_model)
@@ -233,6 +165,7 @@ lm_wflow <- workflow() %>%
   add_model(lm_model) %>% 
   add_recipe(abalone_recipe)
 
+lm_wflow
 ```
 
 ### Question 6
@@ -249,7 +182,7 @@ test <- data.frame(longest_shell = 0.50,
                    shucked_weight = 1,
                    viscera_weight = 2,
                    shell_weight = 1,
-                   num_type = 1)
+                   type = "F")
 
 lm_fit %>% 
   extract_fit_parsnip() %>% 
@@ -267,13 +200,13 @@ Now you want to assess your model's performance. To do this, use the `yardstick`
 2.  Use `predict()` and `bind_cols()` to create a tibble of your model's predicted values from the **training data** along with the actual observed ages (these are needed to assess your model's performance).
 3.  Finally, apply your metric set to the tibble, report the results, and interpret the *R^2^* value.
 
-From what we got for *R^2^* which is 0.5418369, and somehow when I knit it to pdf it looks different, it is not significant enough to show a strong correlation, it can only be considered relatively strong, but it is not significant enough to compare with our initial function which is age = rings + 1.5. Though the question didn't require us to plot a graph, but the scatter plot should be a clear visual representation that our model didn't do well. 
+From what we got for *R^2^* which is roughly 0.55, it is not significant enough to show a strong correlation, it can only be considered relatively strong, but it is not significant enough to compare with our initial function which is age = rings + 1.5. Though the question didn't require us to plot a graph, but the scatter plot should be a clear visual representation that our model didn't do well. 
 
 ```{r }
 abalone_train %>% 
   head()
 abalone_train_res <- predict(lm_fit, new_data = abalone_train %>%
-                               select(-age, -rings, -type))
+                               select(-age, -rings))
 
 abalone_train_res %>% 
   head()
@@ -297,5 +230,4 @@ abalone_train_res %>%
   theme_bw() +
   coord_obs_pred()
 ```
-![the actual metric table](/Users/codenametaken/Downloads/rmsersqmae.jpg)
 
